@@ -1,186 +1,179 @@
-# Fake News Detection System (AOL Machine Learning & MLOps)
+# Fake News Detection System
 
-Sistem pendeteksi berita bohong (*Fake News*) dan berita asli (*True News*) berbasis **Natural Language Processing (NLP)** dan **Machine Learning**, dilengkapi dengan antarmuka web interaktif serta REST API berbasis **Flask** dan kontainerisasi **Docker**.
-
----
-
-## 📌 Gambaran Umum Proyek
-
-Penyebaran informasi palsu atau hoaks merupakan tantangan besar dalam konsumsi media digital. Proyek ini bertujuan untuk mengklasifikasikan artikel berita (berbahasa Inggris) secara otomatis ke dalam dua kategori:
-- **`True News (0)`**: Berita asli/valid.
-- **`Fake News (1)`**: Berita palsu/hoaks.
-
-Model dilatih menggunakan algoritma **Logistic Regression** yang dipadukan dengan representasi teks **TF-IDF (Term Frequency-Inverse Document Frequency)**.
+An end-to-end Machine Learning and Natural Language Processing (NLP) system designed to detect and classify news articles into real or fake news. The project includes an automated data preprocessing and training pipeline, a Flask REST API with a simple web interface, and containerized deployment using Docker.
 
 ---
 
-## 🛠️ Tech Stack & Library
+## Overview
 
-- **Bahasa Pemrograman**: Python 3.9+
-- **Machine Learning & NLP**:
-  - `scikit-learn` (Logistic Regression, TF-IDF Vectorizer, Evaluation Metrics)
-  - `nltk` (Pembersihan Stopwords)
-  - `pandas` & `numpy` (Manipulasi Data)
-- **Web Framework & API**: `Flask`
-- **Frontend**: HTML5, CSS3, Vanilla JavaScript (Fetch API)
-- **Containerization & Deployment**: `Docker`, `Docker Compose`
+The proliferation of misinformation and fake news poses significant challenges to information integrity. This project implements a binary text classifier using TF-IDF feature extraction and Logistic Regression to categorize English news articles:
+
+- **True News (0)**: Factual and verified news articles.
+- **Fake News (1)**: Fabricated or misleading news stories.
 
 ---
 
-## 📂 Struktur Direktori Proyek
+## Tech Stack
+
+- **Programming Language**: Python 3.9+
+- **Machine Learning & NLP**: scikit-learn, NLTK, pandas, numpy
+- **Web Framework**: Flask
+- **Containerization**: Docker, Docker Compose
+- **Frontend**: HTML5, CSS3, JavaScript (Fetch API)
+
+---
+
+## Repository Structure
 
 ```text
-AOL/
+.
 ├── rawData/
-│   ├── .gitkeep                 # Menjaga struktur folder tetap ada di Git
-│   ├── Fake.csv                 # Dataset berita palsu (~62.8 MB) [Diabaikan di Git]
-│   └── True.csv                 # Dataset berita valid (~53.6 MB) [Diabaikan di Git]
+│   ├── .gitkeep                 # Preserves directory structure in version control
+│   ├── Fake.csv                 # Fake news dataset (excluded from git)
+│   └── True.csv                 # True news dataset (excluded from git)
 ├── templates/
-│   └── simple.html              # Antarmuka web pengguna (UI)
-├── app.py                       # Backend server Flask & endpoint /predict
-├── train.py                     # Pipeline pelatihan, vectorizer, dan evaluasi model
-├── Dockerfile                   # Spesifikasi container Docker
-├── docker-compose.yml           # Konfigurasi orkestrasi container
-├── requirements.txt             # Daftar dependensi Python
-├── model_fakeTrue_news.pkl      # Artefak model Logistic Regression (tersimpan)
-├── vectorizer.pkl               # Artefak TF-IDF Vectorizer (tersimpan)
-├── Demo.mp4                     # Video demonstrasi proyek [Diabaikan di Git]
-├── .gitignore                   # Konfigurasi file yang diabaikan Git
-└── README.md                    # Dokumentasi lengkap proyek
+│   └── simple.html              # Web user interface template
+├── app.py                       # Flask application serving predictions and web UI
+├── train.py                     # Pipeline for data preprocessing, vectorization, and training
+├── Dockerfile                   # Docker container specification
+├── docker-compose.yml           # Docker Compose configuration
+├── requirements.txt             # Python dependencies
+├── model_fakeTrue_news.pkl      # Serialized trained Logistic Regression model
+├── vectorizer.pkl               # Serialized fitted TF-IDF vectorizer
+├── .gitignore                   # Git ignore configuration
+└── README.md                    # Project documentation
 ```
 
 ---
 
-## 📊 Dataset
+## Dataset
 
-Dataset yang digunakan bersumber dari dataset standar deteksi berita (*ISOT Fake News Dataset*):
-- **`True.csv`**: Kumpulan artikel berita terverifikasi (umumnya bersumber dari kantor berita Reuters).
-- **`Fake.csv`**: Kumpulan artikel berita hoaks/palsu dari berbagai sumber online tidak kredibel.
-- **Struktur Kolom**:
-  - `title`: Judul artikel berita.
-  - `text`: Isi lengkap artikel berita.
-  - `subject`: Kategori/topik berita (misal: *politicsNews*, *worldnews*).
-  - `date`: Tanggal publikasi berita.
+The model is trained on the ISOT Fake News Dataset, containing two separate subsets:
 
-> **Catatan Penyimpanan Dataset**:
-> Karena ukuran kedua file CSV melebihi **115 MB**, file dataset diabaikan oleh Git via `.gitignore` untuk mencegah batas ukuran file GitHub (maks. 100 MB). Jika baru melakukan `git clone`, pastikan Anda meletakkan file `True.csv` dan `Fake.csv` ke dalam folder `rawData/`.
+- **True.csv**: Articles sourced from reputable agencies (predominantly Reuters).
+- **Fake.csv**: Articles collected from untrustworthy websites and flagged fact-checking sources.
+
+### Schema
+Each dataset contains the following attributes:
+- `title`: Headline of the news article.
+- `text`: Full body text of the article.
+- `subject`: Category/topic (e.g., politics, world news).
+- `date`: Publication date.
+
+> **Note**: Due to GitHub file size limitations (both files combined exceed 115 MB), raw CSV files are tracked by `.gitignore`. To train the model locally, place `True.csv` and `Fake.csv` inside the `rawData/` directory.
 
 ---
 
-## ⚙️ Alur Kerja Sistem (Pipeline)
-
-```mermaid
-flowchart LR
-    A["Raw Data (CSV)"] --> B["Pembersihan Teks\n(Regex, Lowercase, Stopwords)"]
-    B --> C["TF-IDF Vectorizer\n(max_features=5000)"]
-    C --> D["Pelatihan Model\n(Logistic Regression)"]
-    D --> E["Simpan Artefak\n(.pkl)"]
-    E --> F["Flask Server & API\n(/predict)"]
-    F --> G["Web UI\n(simple.html)"]
-```
+## Pipeline Architecture
 
 1. **Text Preprocessing**:
-   - Konversi teks ke huruf kecil (*lowercase*).
-   - Menghilangkan tanda kurung siku, URL, tag HTML, tanda baca, karakter newline, dan angka.
-   - Menghapus kata umum berbahasa Inggris (*stopwords*) menggunakan modul NLTK.
+   - Lowercase normalization.
+   - Removal of bracketed text, URLs, HTML tags, punctuation, newline characters, and alphanumeric strings with digits.
+   - English stopword removal via NLTK corpus.
 2. **Feature Extraction**:
-   - Mengubah teks menjadi representasi numerik menggunakan `TfidfVectorizer` dengan 5.000 fitur kata terpenting.
-3. **Model Training**:
-   - Data dibagi menjadi 80% data latih (*training set*) dan 20% data uji (*test set*).
-   - Melatih model `LogisticRegression` pada data latih.
-4. **Evaluasi & Simpan**:
-   - Mengukur performa menggunakan akurasi dan *classification report* (Precision, Recall, F1-Score).
-   - Menyimpan model ke `model_fakeTrue_news.pkl` dan vectorizer ke `vectorizer.pkl`.
+   - Term Frequency-Inverse Document Frequency (`TfidfVectorizer`) restricted to the top 5,000 most informative features.
+3. **Model Training & Evaluation**:
+   - 80/20 train-test split (`random_state=42`).
+   - Logistic Regression classifier trained on vectorized representations.
+   - Evaluation metrics: Accuracy, Precision, Recall, and F1-score.
+4. **Artifact Serialization**:
+   - Persistence of the trained classifier (`model_fakeTrue_news.pkl`) and vocabulary vectorizer (`vectorizer.pkl`) via Python `pickle`.
 
 ---
 
-## 🚀 Panduan Menjalankan Proyek
+## Getting Started
 
-### Cara 1: Menggunakan Lingkungan Python Lokal
+### Option 1: Local Environment
 
-1. **Clone Repositori**:
+#### Prerequisites
+- Python 3.9 or higher
+- pip package manager
+
+#### Setup Steps
+
+1. Clone the repository:
    ```bash
-   git clone <url-repository-anda>
-   cd AOL
+   git clone <repository-url>
+   cd <repository-directory>
    ```
 
-2. **Buat & Aktifkan Virtual Environment**:
+2. Create and activate a virtual environment:
    ```bash
    # Windows
    python -m venv venv
    venv\Scripts\activate
 
-   # macOS / Linux
+   # Linux / macOS
    python3 -m venv venv
    source venv/bin/activate
    ```
 
-3. **Install Dependensi**:
+3. Install required packages:
    ```bash
    pip install -r requirements.txt
    ```
 
-4. **Latih Model (Opsional jika ingin melatih ulang)**:
+4. Train the model (optional if `.pkl` files are already present):
    ```bash
    python train.py
    ```
-   *Langkah ini akan menghasilkan file `model_fakeTrue_news.pkl` dan `vectorizer.pkl`.*
 
-5. **Jalankan Web Server Flask**:
+5. Run the web server:
    ```bash
    python app.py
    ```
-   Buka peramban (browser) dan akses:
-   👉 **`http://localhost:5000`**
+   Open your browser and navigate to `http://localhost:5000`.
 
 ---
 
-### Cara 2: Menggunakan Docker & Docker Compose
+### Option 2: Docker & Docker Compose
 
-Pastikan Docker Desktop sudah terpasang dan berjalan di komputer Anda.
+#### Prerequisites
+- Docker Engine and Docker Compose installed and running.
 
-1. **Build dan Jalankan Container**:
-   ```bash
-   docker compose up --build
-   ```
-2. **Akses Aplikasi**:
-   Buka browser di **`http://localhost:5000`**.
-3. **Menghentikan Container**:
-   ```bash
-   docker compose down
-   ```
+#### Run with Docker Compose
+```bash
+docker compose up --build
+```
 
----
+Access the application at `http://localhost:5000`.
 
-## 📡 Dokumentasi Endpoint REST API
-
-### 1. Halaman Web (UI)
-* **URL**: `/`
-* **Method**: `GET`
-* **Keterangan**: Menampilkan antarmuka formulir deteksi berita berbasis HTML.
+To stop the container:
+```bash
+docker compose down
+```
 
 ---
 
-### 2. Prediksi Berita
-* **URL**: `/predict`
-* **Method**: `POST`
-* **Header**: `Content-Type: application/json`
+## API Documentation
 
-#### Contoh Request Body (JSON):
+### Web Interface
+- **Endpoint**: `/`
+- **Method**: `GET`
+- **Description**: Serves the browser interface for interactive text analysis.
+
+---
+
+### Prediction Endpoint
+- **Endpoint**: `/predict`
+- **Method**: `POST`
+- **Headers**: `Content-Type: application/json`
+
+#### Request Body
 ```json
 {
-  "text": "The government announced a new economic stimulus package to support small businesses nationwide."
+  "text": "The government passed a comprehensive budget reform bill earlier today in parliament."
 }
 ```
 
-#### Contoh Response Sukses (`200 OK`):
+#### Successful Response (200 OK)
 ```json
 {
   "status": "success",
   "prediction": "True News (Berita asli)"
 }
 ```
-*atau untuk berita terdeteksi hoaks:*
+*or for flagged content:*
 ```json
 {
   "status": "success",
@@ -188,20 +181,9 @@ Pastikan Docker Desktop sudah terpasang dan berjalan di komputer Anda.
 }
 ```
 
-#### Contoh Response Error (`400 Bad Request`):
+#### Error Response (400 Bad Request)
 ```json
 {
-  "error": "Masukkan teks berita dengan key \"text\""
+  "error": "Teks tidak memiliki kata yang valid setelah dibersihkan."
 }
 ```
-
----
-
-## 🔍 Catatan Evaluasi & Rekomendasi Teknis
-
-1. **Konsistensi Preprocessing**:
-   Pastikan fungsi `clean_text` pada `app.py` memiliki tahapan yang identik dengan `train.py` (terutama penghapusan *stopwords*), agar distribusi token input pengguna saat inferensi sama persis dengan data saat pelatihan.
-2. **Pencegahan Data Leakage**:
-   Pada dataset berita asli (*True News*), banyak artikel diawali dengan label kantor berita seperti `WASHINGTON (Reuters) -`. Disarankan untuk membersihkan atribusi penerbit agar model tidak hanya menghafal kata "reuters" untuk memutuskan keaslian berita.
-3. **Optimalisasi Docker**:
-   Agar waktu *startup* container lebih cepat, pisahkan proses *training* dan *serving* sehingga container tidak perlu mengulang proses `train.py` setiap kali dijalankan jika artefak model `.pkl` sudah tersedia.
