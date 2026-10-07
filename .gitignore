@@ -1,0 +1,47 @@
+# Video & Media Besar (>50MB-100MB)
+Demo.mp4
+*.mp4
+*.mkv
+*.avi
+
+# Dataset Berukuran Besar (>50MB per file - melebihi batas/rekomendasi GitHub)
+rawData/*.csv
+# Simpan struktur folder dengan .gitkeep
+!rawData/.gitkeep
+
+# Python / Byte-compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyd
+
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Environment Variables & Credentials
+.env
+.env.local
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# OS temporary files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs & Docker artifacts
+*.log
+.docker/
+
+# Opsional: Jika tidak ingin meng-commit artefak model binary (dibuat ulang via train.py)
+# Uncomment baris di bawah jika ingin mengabaikan model:
+# *.pkl
